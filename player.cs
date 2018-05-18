@@ -13,264 +13,103 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Drawing;
 
 namespace Donkey_Kong
 {
-    class Player
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
     {
-        int top_1;
-        int bottom_1;
-        int top_2;
-        int bottom_2;
-        int top_3;
-        int bottom_3;
-        int top_4;
-        int bottom_4;
+        enum GameState {Title, SplashScreen, GameOn, GameOver, WinScreen }
+        GameState gameState;
+        Player player;
+        Point mouse_pos = new Point();
+        ImageBrush brush = new ImageBrush(new BitmapImage(new Uri(@"E:/Donkey Kong/Donkey Kong/bin/Debug/Untitledbutcorners.png")));
+        Rectangle player_sprite = new Rectangle();
+        DispatcherTimer GameTimer = new DispatcherTimer();
+        //BitmapImage bitmap = new BitmapImage(new Uri(@"E:/Donkey Kong/Donkey Kong/bin/Debug/Shane'sGreatestWork(SomeGarbargeMapOrWhatever).png"));
 
-        int y_vel = 0;
-        Window window;
-        Canvas canvas;
+        int score = 0;
+        int level = 1;
+        int counter = 0;
         bool playerisgenerated = false;
-
-        Point point = new Point(700,80);
-
-        public Player(Window w, Canvas c)
-        {
-            window = w;
-            canvas = c;
-        }
-        public void move()
-        {
-            if (point.X > 25 && point.X < 730)
-            {
-                Console.WriteLine(point.X + ", " + point.Y);
-                if (point.Y > 525)
-                {
-                    if (Keyboard.IsKeyDown(Key.Left))
-                    {
-                        point.X -= 5;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right))
-                    {
-                        point.X += 5;
-                    }
-                }
-                else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 193 && point.Y + 50 >= 139)
-                {
-                    if (point.Y + 50 >= -0.05 * (point.X) + 172 && point.Y + 50 <= point.X + 176)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left))
-                        {
-                            point.X -= 4.75;
-                            point.Y += 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right))
-                        {
-                            point.X += 4.75;
-                            point.Y -= 0.25;
-                        }
-                    }
-                }
-                else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 301 && point.Y + 50 >= 245)
-                {
-                    if (point.Y + 50 >= 0.05 * (point.X) + 245 && point.Y + 50 <= 0.05 * (point.X) + 249)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left))
-                        {
-                            point.X -= 4.75;
-                            point.Y -= 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right))
-                        {
-                            point.X += 4.75;
-                            point.Y += 0.25;
-                        }
-                    }
-                }
-                else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 421 && point.Y + 50 >= 367)
-                {
-                    if (point.Y + 50 >= -0.05 * (point.X) + 398 && point.Y + 50 <= 0.05 * (point.X) + 402)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left))
-                        {
-                            point.X -= 4.75;
-                            point.Y += 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right))
-                        {
-                            point.X += 4.75;
-                            point.Y -= 0.25;
-                        }
-                    }
-                }
-                else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 551 && point.Y + 50 >= 496)
-                {
-                    if (point.Y + 50 >= 0.05 * (point.X) + 496 && point.Y + 50 <= 0.05 * (point.X) + 500)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left))
-                        {
-                            point.X -= 4.75;
-                            point.Y -= 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right))
-                        {
-                            point.X += 4.75;
-                            point.Y += 0.25;
-                        }
-                    }
-                }
-                /*if ((point.Y < 500 && point.Y > 380) || (point.Y < 240 && point.Y > 165))
-                {
-                    if (Keyboard.IsKeyDown(Key.Left))
-                    {
-                        point.X -= 4.75;
-                        point.Y -= 0.25;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right))
-                    {
-                        point.X += 4.75;
-                        point.Y += 0.25;
-                    }
-                }
-                if ((point.Y < 380 && point.Y > 325) || (point.Y < 165 && point.Y > 125))
-                {
-                    if (Keyboard.IsKeyDown(Key.Left))
-                    {
-                        point.X -= 4.75;
-                        point.Y += 0.25;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right))
-                    {
-                        point.X += 4.75;
-                        point.Y -= 0.25;
-                    }
-                }*/
-                else
-                {
-                    if (Keyboard.IsKeyDown(Key.Left))
-                    {
-                        point.X -= 1;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right))
-                    {
-                        point.X += 1;
-
-                    }
-                }
-            }        
-        }
-        public void fall()
+        
+        public MainWindow()
         {
             
-            if (point.Y == 590)
-            {
-                y_vel = 0;
-                Console.WriteLine("in sector 0");
-            }
-            else if (point.Y > 590)
-            {
-                point.Y = 590;
-                y_vel = 0;
-                Console.WriteLine("in sector 0");
-            }
-            else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 193 && point.Y + 50 >= 139)
-            {
-                if (point.Y + 50 >= -0.05 * (point.X) + 172 && point.Y + 50 <= point.X + 176)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 1");
-                }
-                else
-                {
-                    y_vel = 3;
-                    Console.WriteLine("falling");
-                }
-            }
-            //second from top
-            else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 301 && point.Y + 50 >= 245)
-            {
-                if (point.Y + 50 >= 0.05 * (point.X) + 245 && point.Y + 50 <= 0.05 * (point.X) + 249)
-                {
-                    y_vel = 0;
-
-                    Console.WriteLine("in sector 2");
-                }
-                else
-                {
-                    y_vel = 3;
-                    Console.WriteLine("falling");
-                }
-            }
-            //second from bottom
-            else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 421 && point.X + 50 >= 365)
-            {
-                if (point.Y + 50 >= -0.05 * (point.X) + 398 && point.Y + 50 <= 0.05 * (point.X) + 402)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 3");
-                }
-                else
-                {
-                    y_vel = 3;
-                    Console.WriteLine("falling");
-                }
-            }
-            //lowest angled bar
-            else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 551 && point.Y + 50 >= 496)
-            {
-                if (point.Y + 50 >= 0.05 * (point.X) + 496 && point.Y + 50 <= 0.05 * (point.X) + 500)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 4");
-                }
-                else
-                {
-                    y_vel = 3;
-                    Console.WriteLine("falling");
-                }
-            }
-            else
-            {
-                y_vel = 3;
-                Console.WriteLine("falling");
-            }
-
-            point.Y += y_vel;
-
+            InitializeComponent();
+            
+            Map map = new Map(canvas, this);
+            gameState = GameState.SplashScreen;
+            GameTimer.Tick += GameTimer_Tick;
+            GameTimer.Interval = new TimeSpan(170000);
+            GameTimer.Start();
+            map.drawMap();
+            player = new Player(this, canvas);
+            
         }
-        public void jump()
+
+        private void GameTimer_Tick(object sender, EventArgs e)
         {
-            //Console.WriteLine("is diplasy");
-            if (Keyboard.IsKeyDown(Key.Up))
+            
+            for (int i = canvas.Children.Count -13; i >= 13; i--)
             {
-                for (int i = 0; i <= 5; i++)
+                canvas.Children.RemoveAt(i);
+            }      
+            if (gameState == GameState.Title)
+            {
+                this.Title = "Title Screen";
+            }
+            if (gameState == GameState.SplashScreen)
+            {
+                
+                this.Title = "SplashScreen";
+                counter++;
+                
+                if (playerisgenerated == false)
                 {
+                    player.generate(player_sprite, brush);                   
+                    canvas.Children.Add(player_sprite);
+                    playerisgenerated = true;
+                }
+                if (playerisgenerated == true)
+                {
+                   
+                    player.fall();
+                    player.update(player_sprite);
                     
                 }
+                
+                
+                
+            }
+            if (gameState == GameState.GameOn)
+            {
+                
+            }
+            if (gameState == GameState.GameOver)
+            {
+
+            }
+            if (gameState == GameState.WinScreen)
+            {
+
             }
         }
-        public void climb()
-        {
 
-        }
-        public void collide()
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
+            //Console.WriteLine(".");
+            player.move();
+            player.jump();
+            
+        }
 
-        }
-        public void update(Rectangle player_sprite)
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            Canvas.SetLeft(player_sprite, point.X);
-            Canvas.SetTop(player_sprite, point.Y);
-        }
-        public void generate(Rectangle player_sprite)
-        {         
-            player_sprite.Width = 25;
-            player_sprite.Height = 50;
-            player_sprite.Fill = Brushes.White;
-            Canvas.SetLeft(player_sprite, point.X);
-            Canvas.SetTop(player_sprite, point.Y);
-                      
+            
+            MessageBox.Show(e.GetPosition(canvas).ToString());
         }
     }
 }
