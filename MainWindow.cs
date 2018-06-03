@@ -13,250 +13,109 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Drawing;
 
-namespace Donkey_Kong
+namespace DonkeyKong
 {
-    class Player
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
     {
-        int y_vel = 0;
-        Window window;
-        Canvas canvas;
+        enum GameState { Title, SplashScreen, GameOn, GameOver, WinScreen }
+        GameState gameState;
+        Player player;
+        U4DonkeyKong.Barrel barrrel;
+        Point mouse_pos = new Point();
+        //ImageBrush brush = new ImageBrush(new BitmapImage(new Uri(@"E:/Donkey Kong/Donkey Kong/bin/Debug/Untitledbutcorners.png")));
+        Rectangle player_sprite = new Rectangle();
+        DispatcherTimer GameTimer = new DispatcherTimer();
+        //BitmapImage bitmap = new BitmapImage(new Uri(@"E:/Donkey Kong/Donkey Kong/bin/Debug/Shane'sGreatestWork(SomeGarbargeMapOrWhatever).png"));
+
+        int score = 0;
+        int level = 1;
+        int counter = 0;
         bool playerisgenerated = false;
+        bool barrelisgenerated = false;
 
-        Point point = new Point(700,80);
-
-        public Player(Window w, Canvas c)
+        public MainWindow()
         {
-            window = w;
-            canvas = c;
+
+            InitializeComponent();
+
+            Map map = new Map(canvas, this);
+            gameState = GameState.SplashScreen;
+            GameTimer.Tick += GameTimer_Tick;
+            GameTimer.Interval = new TimeSpan(170000);
+            GameTimer.Start();
+            map.drawMap();
+            player = new Player(this, canvas);
+            barrrel = new U4DonkeyKong.Barrel(this, canvas);
+
         }
-        public void move()
+
+        private void GameTimer_Tick(object sender, EventArgs e)
         {
+
+            for (int i = canvas.Children.Count - 13; i >= 13; i--)
             {
-                //bottom of screen
-                Console.WriteLine(point.X + ", " + point.Y);
-                if (point.Y > 525)
-                {
-                    if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                    {
-                        point.X -= 5;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                    {
-                        point.X += 5;
-                    }
-                }
-                //first angled platform
-                //boundary for movement
-                else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 193 && point.Y + 50 >= 139)
-                {
-                    //detects if player is along platform
-                    if (point.Y + 50 >= -0.05 * (point.X) + 172 && point.Y + 50 <= point.X + 176)
-                    {
-                        //move left
-                        if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                        {
-                            point.X -= 4.75;
-                            point.Y += 0.25;
-                        }
-                        //move right
-                        if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                        {
-                            point.X += 4.75;
-                            point.Y -= 0.25;
-                        }
-                    
-                    }
-                }
-                //second angled platform
-                else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 301 && point.Y + 50 >= 245)
-                {
-                    if (point.Y + 50 >= 0.05 * (point.X) + 238 && point.Y + 50 <= 0.05 * (point.X) + 249)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                        {
-                            point.X -= 4.75;
-                            point.Y -= 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                        {
-                            point.X += 4.75;
-                            point.Y += 0.25;
-                        }
-                    
-                    }
-                }
-                //third angled platform
-                else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 421 && point.Y + 50 >= 367)
-                {
-                    if (point.Y + 50 >= -0.05 * (point.X) + 398 && point.Y + 50 <= 0.05 * (point.X) + 402)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                        {
-                            point.X -= 4.75;
-                            point.Y += 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                        {
-                            point.X += 4.75;
-                            point.Y -= 0.25;
-                        }
-                        
-                    }
-                }
-                //fourth angled platform
-                else if (point.X <= 624 && point.X >= 22 && point.Y + 50 <= 551 && point.Y + 50 >= 496)
-                {
-                    
-                    if (point.Y + 50 >= 0.05 * (point.X) + 480 && point.Y + 50 <= 0.05 * (point.X) + 500)
-                    {
-                        if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                        {
-                            point.X -= 4.75;
-                            point.Y -= 0.25;
-                        }
-                        if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                        {
-                            point.X += 4.75;
-                            point.Y += 0.25;
-                        }
-                      
-                    }
-                }
-                //movement while falling
-                else
-                {
-                    if (Keyboard.IsKeyDown(Key.Left) && point.X > 25)
-                    {
-                        point.X -= 1;
-                    }
-                    if (Keyboard.IsKeyDown(Key.Right) && point.X < 730)
-                    {
-                        point.X += 1;
+                canvas.Children.RemoveAt(i);
+            }
+            if (gameState == GameState.Title)
+            {
+                this.Title = "Title Screen";
+            }
+            if (gameState == GameState.SplashScreen)
+            {
 
-                    }
+                this.Title = "SplashScreen";
+                counter++;
+
+                if (playerisgenerated == false)
+                {
+                    player.generate(player_sprite);
+                    canvas.Children.Add(player_sprite);
+                    playerisgenerated = true;
+                }
+                if (playerisgenerated == true)
+                {
+
+                    player.fall();
+                    player.update(player_sprite);
 
                 }
-            }        
-        }
-        public void jump()
-        {
-            //checks if up arrow is pressed, and if player is not currently falling
-            if (Keyboard.IsKeyDown(Key.Up) && y_vel == 0)
-            {   
-                y_vel -= 10;
-                point.Y += y_vel;
-                Console.WriteLine(y_vel);
+                if (barrelisgenerated == false)
+                {
+                    barrrel.generate();
+                }
+
+
+            }
+            if (gameState == GameState.GameOn)
+            {
+
+            }
+            if (gameState == GameState.GameOver)
+            {
+
+            }
+            if (gameState == GameState.WinScreen)
+            {
 
             }
         }
-        public void fall()
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            //stops falling and sets player on bottom platform
-            if (point.Y == 590)
-            {
-                y_vel = 0;
-                Console.WriteLine("in sector 0");
-            }
-            else if (point.Y > 590)
-            {
-                point.Y = 590;
-                y_vel = 0;
-                Console.WriteLine("in sector 0");
-            }
-            //top platform
-            //boundaries of platform
-            else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 193 && point.Y + 50 >= 139)
-            {
-                //detects if player is on platform
-                if (point.Y + 50 >= -0.05 * (point.X) + 172 && point.Y + 50 <= point.X + 176)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 1");
-                }
-                else
-                {
-                    y_vel += 1;
-                    Console.WriteLine(y_vel);
-                }
-            }
-            //second from top
-            else if (point.X <= 624 && point.X >= 20 && point.Y + 50 <= 301 && point.Y + 50 >= 245)
-            {
-                if (point.Y + 50 >= 0.05 * (point.X) + 238 && point.Y + 50 <= 0.05 * (point.X) + 252)
-                {
-                    y_vel = 0;
-
-                    Console.WriteLine("in sector 2");
-                }
-                else
-                {
-                    y_vel += 1;
-                    Console.WriteLine(y_vel);
-                }
-            }
-            //second from bottom
-            else if (point.X <= 750 && point.X >= 149 && point.Y + 50 <= 421 && point.Y + 50 >= 365)
-            {
-                if (point.Y + 50 >= -0.05 * (point.X) + 400 && point.Y + 50 <= 0.05 * (point.X) + 402)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 3");
-                }
-                else
-                {
-                    y_vel += 1;
-                    Console.WriteLine(y_vel);
-                }
-            }
-            //lowest angled bar
-            else if (point.X <= 624 && point.X >= 20 && point.Y + 50 <= 551 && point.Y + 50 >= 492)
-            {
-                if (point.Y + 50 >= 0.05 * (point.X) + 492 && point.Y + 50 <= 0.05 * (point.X) + 507)
-                {
-                    y_vel = 0;
-                    Console.WriteLine("in sector 4");
-                }
-                else
-                {
-                    y_vel += 1;
-                    Console.WriteLine(y_vel);
-                }
-            }
-            else
-            {
-                y_vel += 1;
-                Console.WriteLine(y_vel);
-            }
-
-            point.Y += y_vel;
+            //Console.WriteLine(".");
+            player.move();
+            player.jump();
 
         }
-      
-        public void climb()
+
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
 
-        }
-        public void collide()
-        {
-
-        }
-        public void update(Rectangle player_sprite)
-            //moves player sprite to current position
-        {
-            Canvas.SetLeft(player_sprite, point.X);
-            Canvas.SetTop(player_sprite, point.Y);
-        }
-        public void generate(Rectangle player_sprite, ImageBrush image)
-        {         
-            //generates player sprite.
-            player_sprite.Width = 25;
-            player_sprite.Height = 50;
-            //player_sprite.Fill = Brushes.White;
-            player_sprite.Fill = image;
-            Canvas.SetLeft(player_sprite, point.X);
-            Canvas.SetTop(player_sprite, point.Y);            
+            MessageBox.Show(e.GetPosition(canvas).ToString());
         }
     }
 }
